@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scavenger Hunt</title>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+    .hidden { display: none; }
+    #clue-box { margin-top: 20px; font-size: 1.2em; }
+    #progress { margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Welcome to the Scavenger Hunt</h1>
+  <div id="start-screen">
+    <p>Enter your name to begin:</p>
+    <input type="text" id="username" placeholder="Your Name" />
+    <br><br>
+    <button onclick="startHunt()">Start Hunt</button>
+  </div>
+
+  <div id="scanner-screen" class="hidden">
+    <h2>Hello, <span id="displayName"></span>!</h2>
+    <p>Scan a QR Code:</p>
+    <div id="reader" style="width: 300px; margin: auto;"></div>
+    <div id="clue-box"></div>
+    <div id="progress"></div>
+    <button onclick="resetHunt()">End Hunt</button>
+  </div>
+
+  <script>
+    let username = "";
+    let scannedClues = new Set();
+
+    const clues = {
+      "clue1": "Find the pond where frogs leap into dreams.",
+      "clue2": "Look under the flower that blooms like fire.",
+      "clue3": "Where benches whisper tales of rest.",
+      "clue4": "Seek the sign of New Hope where paths divide."
+    };
+
+    function startHunt() {
+      username = document.getElementById("username").value;
+      if (!username) return alert("Please enter your name.");
+      document.getElementById("start-screen").classList.add("hidden");
+      document.getElementById("scanner-screen").classList.remove("hidden");
+      document.getElementById("displayName").innerText = username;
+
+      const html5QrCode = new Html5Qrcode("reader");
+      const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+        if (!scannedClues.has(decodedText)) {
+          scannedClues.add(decodedText);
+          document.getElementById("clue-box").innerText = clues[decodedText] || "Unknown clue.";
+          updateProgress();
+        } else {
+          document.getElementById("clue-box").innerText = "You already scanned this clue.";
+        }
+      };
+
+      const config = { fps: 10, qrbox: 250 };
+      html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback);
+    }
+
+    function updateProgress() {
+      document.getElementById("progress").innerText = `Clues found: ${scannedClues.size}`;
+    }
+
+    function resetHunt() {
+      alert(`${username}, you found ${scannedClues.size} clue(s). Good job!`);
+      location.reload();
+    }
+  </script>
+</body>
+</html>
